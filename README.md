@@ -1,6 +1,6 @@
 # 🛒 Shopping Cart API + Frontend
 
-![Architecture Diagram](./diagram.png)
+![Architecture Diagram](https://github.com/user-attachments/assets/871b99d0-8e9d-47ea-bd8d-0e6be6b6f3d6)
 
 This is a simple project that demonstrates how to build and containerize a FastAPI backend with a static frontend served by Nginx. It's designed for academic purposes and highlights a clear separation between API and static content.
 
@@ -58,13 +58,7 @@ docker-compose up --build
 
 ## ⚙️ API Endpoints
 
-Example root endpoint (`GET /api/`):
-
-```json
-{
-  "Hello": "World"
-}
-```
+Example root endpoint (`GET /api/`)
 
 All API documentation is available via the [Swagger UI](http://localhost/api/docs).
 
@@ -87,5 +81,4 @@ Feel free to add screenshots of your running app or database visualizations here
 ## 📄 License
 
 This project is licensed under the terms of the `LICENSE` file.
-```
 
