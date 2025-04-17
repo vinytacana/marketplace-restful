@@ -40,6 +40,7 @@ This is a simple project that demonstrates how to build and containerize a FastA
 
 ```bash
 git clone https://github.com/vinytacana/marketplace-restful.git
+cd marketplace-restful
 ```
 
 ### 2. Build and start the containers
