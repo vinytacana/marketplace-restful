@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="transition-colors duration-500">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Xique Xique Achadinhos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+  <style>
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .toast {
+      animation: fadeInUp 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-500">
+
+  <!-- Header com botão de tema -->
+  <header class="flex items-center justify-between p-6 shadow-md bg-white dark:bg-gray-800">
+    <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">Xique Xique Achadinhos</h1>
+    <button id="theme-toggle" class="text-xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+      🌞
+    </button>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="container mx-auto p-6 space-y-10">
+
+    <!-- Criar Produto -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md transition">
+      <h2 class="text-2xl font-semibold mb-4">Criar Produto</h2>
+      <div class="flex flex-col md:flex-row gap-4">
+        <input id="nome" type="text" placeholder="Nome" class="bg-gray-100 dark:bg-gray-700 border p-3 rounded-lg w-full md:w-1/4 focus:ring-2 focus:ring-blue-500">
+        <input id="preco" type="number" placeholder="Preço" class="bg-gray-100 dark:bg-gray-700 border p-3 rounded-lg w-full md:w-1/4 focus:ring-2 focus:ring-blue-500">
+        <input id="image_url" type="text" placeholder="URL da Imagem" class="bg-gray-100 dark:bg-gray-700 border p-3 rounded-lg w-full md:w-1/2 focus:ring-2 focus:ring-blue-500">
+        <button onclick="criarProduto()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Criar</button>
+      </div>
+    </section>
+
+    <!-- Listar Produtos -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md transition">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-semibold">Produtos</h2>
+        <button onclick="listarProdutos()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Atualizar Lista</button>
+      </div>
+      <div id="lista-produtos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- Ver Carrinho -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md transition">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-semibold">Carrinho</h2>
+        <button onclick="verCarrinho()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Ver Carrinho</button>
+      </div>
+      <ul id="lista-carrinho" class="space-y-4"></ul>
+    </section>
+  </main>
+
+  <!-- Toasts -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+
+  <script>
+    const API_BASE = '/api';
+
+    function mostrarToast(msg, tipo = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${
+        tipo === 'success' ? 'bg-green-600' : 'bg-red-600'
+      }`;
+      toast.innerHTML = `${tipo === 'success' ? '✅' : '⚠️'} ${msg}`;
+      document.getElementById('toast-container').appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function criarProduto() {
+      const nome = document.getElementById('nome').value;
+      const preco = document.getElementById('preco').value;
+      const image_url = document.getElementById('image_url').value;
+
+      const res = await fetch(`${API_BASE}/produtos/?nome=${encodeURIComponent(nome)}&preco=${preco}&image_url=${encodeURIComponent(image_url)}`, {
+        method: 'POST'
+      });
+
+      if (res.ok) {
+        mostrarToast("Produto criado!");
+        listarProdutos();
+      } else {
+        mostrarToast("Erro ao criar produto.", 'error');
+      }
+    }
+
+    async function listarProdutos() {
+      const res = await fetch(`${API_BASE}/produtos/`);
+      const produtos = await res.json();
+
+      const lista = document.getElementById('lista-produtos');
+      lista.innerHTML = '';
+
+      produtos.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'rounded-xl shadow-lg p-4 bg-gray-50 dark:bg-gray-700 flex flex-col items-center transition hover:shadow-xl';
+
+        card.innerHTML = `
+          <img src="${p.image_url || 'https://via.placeholder.com/150'}" alt="${p.nome}" class="w-32 h-32 object-cover rounded mb-3">
+          <h3 class="text-lg font-bold mb-1">${p.nome}</h3>
+          <p class="text-gray-700 dark:text-gray-200 mb-2">R$ ${p.preco.toFixed(2)}</p>
+          <div class="flex gap-2">
+            <button onclick="adicionarAoCarrinho(${p.id})" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition">Adicionar</button>
+            <button onclick="deletarProduto(${p.id})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">Deletar</button>
+          </div>
+        `;
+        lista.appendChild(card);
+      });
+    }
+
+    async function deletarProduto(id) {
+      const confirmado = confirm("Tem certeza que deseja deletar este produto?");
+      if (!confirmado) return;
+
+      const res = await fetch(`${API_BASE}/produtos/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        mostrarToast("Produto deletado!");
+        listarProdutos();
+      } else {
+        mostrarToast("Erro ao deletar produto.", 'error');
+      }
+    }
+
+    async function adicionarAoCarrinho(id) {
+      const quantidade = prompt("Quantidade:");
+      if (!quantidade) return;
+
+      const res = await fetch(`${API_BASE}/carrinho/?produto_id=${id}&quantidade=${quantidade}`, { method: 'POST' });
+      if (res.ok) {
+        mostrarToast("Produto adicionado ao carrinho!");
+      } else {
+        mostrarToast("Erro ao adicionar ao carrinho.", 'error');
+      }
+    }
+
+    async function verCarrinho() {
+      const res = await fetch(`${API_BASE}/carrinho/`);
+      const itens = await res.json();
+
+      const lista = document.getElementById('lista-carrinho');
+      lista.innerHTML = '';
+
+      itens.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'border rounded-xl p-4 flex items-center gap-4 bg-gray-100 dark:bg-gray-700 shadow-md';
+
+        li.innerHTML = `
+          <img src="${item.image_url || 'https://via.placeholder.com/100'}" alt="${item.produto}" class="w-16 h-16 object-cover rounded">
+          <div>
+            <h4 class="font-semibold">${item.produto}</h4>
+            <p>${item.quantidade} x R$ ${item.preco_unitario.toFixed(2)} = <strong>R$ ${item.total.toFixed(2)}</strong></p>
+          </div>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('theme-toggle');
+      html.classList.toggle('dark');
+      const isDark = html.classList.contains('dark');
+      btn.textContent = isDark ? '🌙' : '🌞';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') document.documentElement.classList.add('dark');
+      if (saved === 'light') document.documentElement.classList.remove('dark');
+      document.getElementById('theme-toggle').textContent = document.documentElement.classList.contains('dark') ? '🌙' : '🌞';
+    }
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTheme();
+      listarProdutos();
+    });
+  </script>
+</body>
+</html>
+
