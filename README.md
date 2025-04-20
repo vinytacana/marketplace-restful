@@ -69,13 +69,6 @@ All API documentation is available via the [Swagger UI](http://localhost/api/doc
 - The `index.html` is served by Nginx at the root `/` path.
 - All API endpoints are routed via `/api/*`.
 - The SQLite database (`carrinho.db`) is located in the root and accessed by FastAPI.
-
----
-
-## 📷 Screenshots & Extras
-
-Feel free to add screenshots of your running app or database visualizations here.
-
 ---
 
 ## 📄 License
